@@ -93,26 +93,30 @@ function Select-References
         [Parameter(Mandatory)][String]$xmlPathRef,
         [Parameter(Mandatory)][String]$xmlPathType
     )
+    [single]$hue = ($global:indentity * 23.0)
+    $rgb = HSLtoRGB $hue 1.0 0.45
+
     $projectName = $prjFile.Name
     [xml]$projectXml = Get-Content $prjFile
+    [bool]$subprojects = 0
     $projectXml |
     Select-Xml -XPath $xmlPathRef |
     foreach {
         if ( $ExcludePattern.Length -eq 0 -or $_ -Match $ExcludePattern -eq 0 )
         {        
-            [single]$hue = $global:indentity * 7.0
-            $rgbt = HSLtoRGB $hue 1.0 0.5
-
-            "`"" + $projectName + "`" -> `"" + [System.IO.Path]::GetFileName($_) +"`" [color=`"#" + 
-                ("{0:X2}" -f $rgbt[0]) +
-                ("{0:X2}" -f $rgbt[1]) +
-                ("{0:X2}" -f $rgbt[2]) +
+            "`"" + $projectName.ToLower() + "`" -> `"" + [System.IO.Path]::GetFileName($_).ToLower() +"`" [color=`"#" + 
+                ("{0:X2}" -f $rgb[0]) +
+                ("{0:X2}" -f $rgb[1]) +
+                ("{0:X2}" -f $rgb[2]) +
                 "`"];"
             Write-Verbose ("--> " + $_)
-            Write-Progress $projectName -Status $_ -PercentComplete $global:indentity
-            $global:indentity += 1
-            $global:indentity %= 100
+            Write-Progress $projectName -Status $_
+            $subprojects = 1
         }
+    }
+    if ( $subprojects )
+    {
+        $global:indentity += 1
     }
 
     $projectXml |
@@ -168,7 +172,7 @@ function Get-ProjectsPaths
 
     "/* Generated using build_project_tree.ps1 */"    
     "digraph " + $slnFile.BaseName + " {"
-    "size=`"60,60`"; rankdir=LR; overlap=false; splines=true;"
+    "size=`"60,60`"; rankdir=LR; overlap=false; splines=true; dpi=300;"
     "node[color=mediumorchid3, style=filled, shape=box, fontsize=10, fontcolor=white];"
     "edge[arrowhead=vee, arrowtail=inv, arrowsize=.7, fontsize=10, fontcolor=navy];"
 
@@ -200,7 +204,7 @@ function Get-ProjectsPaths
 #
 
 $OutputEncoding = New-Object -typename System.Text.UTF8Encoding
-[byte]$global:indentity = 0
+[single]$global:indentity = 0
 $pathHelper = $ExecutionContext.SessionState.Path
 $slnFile = $pathHelper.GetUnresolvedProviderPathFromPSPath($In)
 
