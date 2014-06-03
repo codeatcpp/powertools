@@ -124,10 +124,10 @@ function Select-References
     Select-Object -First 1 | % {
         switch -Wildcard ($_)
         {
-            "Application" { "`"" + $projectName + "`" [color=cornflowerblue];" }
-            "1" { "`"" + $projectName + "`" [color=cornflowerblue];" }
-            "DynamicLibrary" { "`"" + $projectName + "`" [color=indigo];" }
-            2 { "`"" + $projectName + "`" [color=indigo];" }
+            "Application" { "`"" + $projectName.ToLower() + "`" [color=cornflowerblue];" }
+            "1" { "`"" + $projectName.ToLower() + "`" [color=cornflowerblue];" }
+            "DynamicLibrary" { "`"" + $projectName.ToLower() + "`" [color=indigo];" }
+            2 { "`"" + $projectName.ToLower() + "`" [color=indigo];" }
         }
     }
 }
