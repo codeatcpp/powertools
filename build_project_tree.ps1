@@ -65,6 +65,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ./build_project_tree.ps1 -In test2.sln -Verbose
 #>
 
+#requires -version 3
+
 Param(
     [Parameter(Mandatory)][System.IO.FileInfo]$In,
     [System.IO.FileInfo]$Out=$In.BaseName + "_dep_graph.gv",
