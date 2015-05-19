@@ -41,7 +41,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .NOTES
     Filename: build_project_tree.ps1
     Author: Kirill V. Lyadvinsky
-    Requires: PowerShell V2 CTP3
+    Requires: PowerShell 3.0
 
 .PARAMETER In
     Specifies the path to the input file. Solution files of the Visual Studio
