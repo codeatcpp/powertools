@@ -1,48 +1,68 @@
 <#
 
-Copyright (c) 2014, Kirill V. Lyadvinsky (http://www.codeatcpp.com)
+Copyright (c) 2015, Kirill V. Lyadvinsky (http://www.codeatcpp.com)
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided
-that the following conditions are met:
-  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
-     the following disclaimer.
-  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
-     and the following disclaimer in the documentation and/or other materials provided with the distribution.
-  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
-     or promote products derived from this software without specific prior written permission.
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+  1. Redistributions of source code must retain the above copyright notice, this
+     list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+  3. Neither the name of the copyright holder nor the names of its contributors
+     may be used to endorse or promote products derived from this software
+     without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #>
 
 <#
 .SYNOPSIS
-   Visual Studio projects dependencies generator.
+    Visual Studio projects dependencies generator.
 
 .DESCRIPTION
-   This script generates GraphViz files which reflect dependencies between the projects in the specified Visual Studio solution file.
+    This script generates GraphViz file which is reflect the dependencies between
+    projects in the specified Visual Studio solution file.
 
 .LINK
-   http://www.codeatcpp.com
+    http://www.codeatcpp.com
 
 .NOTES
-   Filename: build_project_tree.ps1
-   Author: Kirill V. Lyadvinsky
-   Requires: PowerShell V2 CTP3
+    Filename: build_project_tree.ps1
+    Author: Kirill V. Lyadvinsky
+    Requires: PowerShell V2 CTP3
+
+.PARAMETER In
+    Specifies the path to the input file. Solution files of the Visual Studio
+    2008 and higher are supported.
+
+.PARAMETER Out
+    Specifies the name and path for the GraphViz output file. By default,
+    build_project_tree.ps1 generates a name from the input filename, and saves
+    the output in the local directory.
+
+.INPUTS
+    None. You cannot pipe objects to build_project_tree.ps1.
+
+.OUTPUTS
+    None. build_project_tree.ps1 does not generate any output.
 
 .EXAMPLE
-   ./build_project_tree.ps1 -In test.sln -ExcludePattern "test|unit"
+    ./build_project_tree.ps1 -In test.sln -ExcludePattern "test|unit"
 
 .EXAMPLE
-   ./build_project_tree.ps1 -In test2.sln -Verbose
+    ./build_project_tree.ps1 -In test2.sln -Verbose
 #>
 
 Param(
@@ -51,7 +71,10 @@ Param(
     [String]$ExcludePattern
 )
 
-function Value([Parameter(Mandatory)][single]$m1, [Parameter(Mandatory)][single]$m2, [Parameter(Mandatory)][single]$h)
+function Value(
+    [Parameter(Mandatory)][single]$m1,
+    [Parameter(Mandatory)][single]$m2,
+    [Parameter(Mandatory)][single]$h)
 {
     while ( $h -ge 360 ) { $h -= 360 }
     while ( $h -lt 0 ) { $h += 360 }
@@ -67,7 +90,10 @@ function Value([Parameter(Mandatory)][single]$m1, [Parameter(Mandatory)][single]
     return ,[byte]($m1*255)
 }
 
-function HSLtoRGB([Parameter(Mandatory)][single]$Hue, [Parameter(Mandatory)][single]$Saturation, [Parameter(Mandatory)][single]$Lightness)
+function HSLtoRGB(
+    [Parameter(Mandatory)][single]$Hue,
+    [Parameter(Mandatory)][single]$Saturation,
+    [Parameter(Mandatory)][single]$Lightness)
 {
     $rgb = New-Object byte[] 3
 
@@ -86,6 +112,9 @@ function HSLtoRGB([Parameter(Mandatory)][single]$Hue, [Parameter(Mandatory)][sin
     Return ,$rgb
 }
 
+#
+# Find dependencies for the specified project file using specified patterns.
+#
 function Select-References
 {
     param(
@@ -102,9 +131,10 @@ function Select-References
     $projectXml |
     Select-Xml -XPath $xmlPathRef |
     foreach {
-        if ( $ExcludePattern.Length -eq 0 -or $_ -Match $ExcludePattern -eq 0 )
+        if ( $ExcludePattern.Length -eq 0 -or $_ -match $ExcludePattern -eq 0 )
         {        
-            "`"" + $projectName.ToLower() + "`" -> `"" + [System.IO.Path]::GetFileName($_).ToLower() +"`" [color=`"#" + 
+            "`"" + $projectName.ToLower() + "`" -> `"" +
+                [System.IO.Path]::GetFileName($_).ToLower() +"`" [color=`"#" + 
                 ("{0:X2}" -f $rgb[0]) +
                 ("{0:X2}" -f $rgb[1]) +
                 ("{0:X2}" -f $rgb[2]) +
@@ -124,14 +154,38 @@ function Select-References
     Select-Object -First 1 | % {
         switch -Wildcard ($_)
         {
-            "Application" { "`"" + $projectName.ToLower() + "`" [color=cornflowerblue];" }
-            "1" { "`"" + $projectName.ToLower() + "`" [color=cornflowerblue];" }
-            "DynamicLibrary" { "`"" + $projectName.ToLower() + "`" [color=indigo];" }
-            2 { "`"" + $projectName.ToLower() + "`" [color=indigo];" }
+            {($_.ToString() -eq "1") -or ($_.ToString() -eq "Application") -or ($_ -match "Exe")}
+            {
+                "`"" + $projectName.ToLower() + "`" [color=cornflowerblue];"
+                continue
+            }
+            {($_.ToString() -eq "4") -or ($_.ToString -eq "StaticLibrary")}
+            {
+                "`"" + $projectName.ToLower() + "`" [color=indigo];"
+                continue
+            }
+            {($_.ToString() -eq "2") -or ($_ -match "Library")}
+            {
+                "`"" + $projectName.ToLower() + "`" [color=indigo];"
+                continue
+            }
+            {($_.ToString() -eq "10")}
+            {
+                "`"" + $projectName.ToLower() +
+                    "`" [color=black, style=dashed, fontcolor=black];"
+                continue
+            }
+            default
+            { 
+                Write-Warning ("Unknown module type: " + $_)
+            }
         }
     }
 }
 
+#
+# Find dependencies for the specified VS2008 project file.
+#
 function Select-References-VS2008
 {
     param(
@@ -148,6 +202,9 @@ function Select-References-VS2008
     }
 }
 
+#
+# Find dependencies for the specified VS2010 project file.
+#
 function Select-References-VS2010
 {
     param(
@@ -155,7 +212,16 @@ function Select-References-VS2010
     )
     if ( Test-Path $prjFile )
     {
-        Select-References $prjFile "//*[local-name()=`"ProjectReference`"]/@Include" "//*[local-name()=`"ConfigurationType`"]/text()"
+        if ( $prjFile.Extension -eq ".csproj" )
+        {
+            $prjTypeXPath = "//*[local-name()=`"OutputType`"]/text()"
+        }
+        else 
+        {
+            $prjTypeXPath = "//*[local-name()=`"ConfigurationType`"]/text()"
+        }
+        Select-References $prjFile `
+            "//*[local-name()=`"ProjectReference`"]/@Include" $prjTypeXPath
     }
     else
     {
@@ -163,27 +229,38 @@ function Select-References-VS2010
     }    
 }
 
-
+#
+# Extract paths to the projects files from the specified solution file.
+#
 function Get-ProjectsPaths
 {
     param(
         [Parameter(Mandatory)][System.IO.FileInfo]$slnFile
     )
 
+    # Add graph header
     "/* Generated using build_project_tree.ps1 */"    
     "digraph " + $slnFile.BaseName + " {"
     "size=`"60,60`"; rankdir=LR; overlap=false; splines=true; dpi=300;"
     "node[color=mediumorchid3, style=filled, shape=box, fontsize=10, fontcolor=white];"
     "edge[arrowhead=vee, arrowtail=inv, arrowsize=.7, fontsize=10, fontcolor=navy];"
+    "labelloc=t; label=""Solution: " + $slnFile.Name + """; fontsize=14;"
 
+    # Parse the solution file
     $slnPath = $slnFile.Directory
-    $strings = Select-String -LiteralPath $slnFile -Pattern "vcx?proj"    
-    $vs2008prj = $strings[0] -Match "vcproj"
+    $strings = Select-String -LiteralPath $slnFile -Pattern "Project\(.*vcx?proj"
+    if ( $strings.Count -gt 0 )
+    {
+        $vs2008prj = $strings[0] -match "vcproj"
+    }
+    $strings += Select-String -LiteralPath $slnFile -Pattern "Project\(.*csproj"
+    # Find dependencies for each project in the solutin
     foreach ( $s in $strings )
     {
-        if ( $ExcludePattern.Length -eq 0 -or $s -Match $ExcludePattern -eq 0 )
+        if ( $ExcludePattern.Length -eq 0 -or $s -match $ExcludePattern -eq 0 )
         {
-            $prjFile = Join-Path -Path $slnPath -ChildPath ($s -split ',')[1].Trim().Replace('"','')
+            $prjFile = Join-Path -Path $slnPath `
+                -ChildPath ($s -split ',')[1].Trim().Replace('"','')
             Write-Verbose $prjFile
             if ( $vs2008prj )
             {
@@ -208,4 +285,4 @@ $OutputEncoding = New-Object -typename System.Text.UTF8Encoding
 $pathHelper = $ExecutionContext.SessionState.Path
 $slnFile = $pathHelper.GetUnresolvedProviderPathFromPSPath($In)
 
-Get-ProjectsPaths $slnFile | Out-File -Encoding utf8 $Out 
+Get-ProjectsPaths $slnFile | Out-File -Encoding utf8 $Out
