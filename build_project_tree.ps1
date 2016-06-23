@@ -36,7 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     projects in the specified Visual Studio solution file.
 
 .LINK
-    http://www.codeatcpp.com
+    https://github.com/codeatcpp/powertools
 
 .NOTES
     Filename: build_project_tree.ps1
